@@ -1,0 +1,28 @@
+global class SVMX_PS_OG_ActiveWellLineHandler implements Schedulable {
+
+    global void execute(SchedulableContext context){
+        List<SVMXC__Service_Order__c> msoList = [SELECT Id,SVMX_PS_OG_Well__c,SVMX_PS_OG_AFE__c FROM SVMXC__Service_Order__c 
+        WHERE SVMXC__Order_Type__c = 'Master Service Order' AND
+        SVMXC__Order_Status__c != 'Closed' AND SVMXC__Order_Status__c != 'Canceled'
+        LIMIT 200];
+        List<SVMXC__Service_Order_Line__c> awhInsert = new List<SVMXC__Service_Order_Line__c>();
+       // List<SVMXC__Site__c> padUpdate = new List<SVMXC__Site__c>();
+        
+        for(SVMXC__Service_Order__c mso : msoList){
+            SVMXC__Service_Order_Line__c awh = new SVMXC__Service_Order_Line__c();
+            awh.SVMX_PS_OG_Well__c = mso.SVMX_PS_OG_Well__c;
+            awh.RecordTypeId = Schema.SObjectType.SVMXC__Service_Order_Line__c.getRecordTypeInfosByName().get('Active Well History').getRecordTypeId();
+            awh.SVMX_PS_OG_Valid_Date__c = Date.today();
+            awh.SVMX_PS_OG_AFE_Number__c = mso.SVMX_PS_OG_AFE__c;
+            awh.SVMXC__Service_Order__c = mso.Id;
+            awhInsert.add(awh);
+            System.debug('Inserting Active Well History line' + awh.Id);
+
+            //mso.SVMXC__Site__c.SVMX_PS_OG_Active_Work_Order__c = mso.Id;
+            //padUpdate.add(mso.SVMXC__Site__c);
+        }
+        if(awhInsert.size() > 0){
+            insert awhInsert;
+        }
+    }
+}
