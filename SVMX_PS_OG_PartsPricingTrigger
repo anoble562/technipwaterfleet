@@ -1,0 +1,12 @@
+trigger SVMX_PS_OG_PartsPricingTrigger on SVMXC__Parts_Pricing__c (after insert, after update)  { 
+
+if(trigger.isInsert || trigger.isUpdate || trigger.isUnDelete){
+list<RollUpSummaryUtility.fieldDefinition> fieldDefinitions =
+ new list<RollUpSummaryUtility.fieldDefinition> {
+ new RollUpSummaryUtility.fieldDefinition('SUM', 'SVMXC__Price_Per_Unit__c',
+ 'SVMXC__Price_Per_Unit__c')
+ };
+RollUpSummaryUtility.rollUpTrigger(fieldDefinitions, trigger.new,
+ 'SVMXC__Parts_Pricing__c', 'SVMX_PS_OG_Package__c', 'SVMXC__Parts_Pricing__c', '');
+}
+}
